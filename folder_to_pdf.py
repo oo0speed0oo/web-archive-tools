@@ -13,22 +13,15 @@ SETUP (run once):
 USAGE:
     python folder_to_pdf.py
 
-OUTPUT:
-    PDF is saved in the same folder as the images with the folder name.
-    e.g., ~/Desktop/my_photos/ -> ~/Desktop/my_photos.pdf
+A folder picker popup will appear—select your folder with images.
+PDF is saved in the parent directory with the folder name.
+e.g., ~/Desktop/my_photos/ -> ~/Desktop/my_photos.pdf
 """
 
 import os
 import re
 from PIL import Image
-from pathlib import Path
-
-# ---- CONFIGURATION ----
-# Edit this to point to your folder with images
-FOLDER_PATH = os.path.expanduser("~/Desktop/my_photos")
-
-# Where to save the PDF (leave as None to save in parent directory)
-OUTPUT_PATH = None  # e.g., ~/Desktop/my_photos.pdf
+from tkinter import Tk, filedialog
 
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
@@ -109,11 +102,31 @@ def convert_folder_to_pdf(folder_path: str, output_path: str = None):
         print(f"Error creating PDF: {e}")
 
 
+def get_folder_from_user() -> str:
+    """Show a folder picker popup and return the selected path."""
+    root = Tk()
+    root.withdraw()  # Hide the root window
+    root.attributes('-topmost', True)  # Bring picker to front
+
+    folder_path = filedialog.askdirectory(title="Select folder with images")
+    root.destroy()
+
+    return folder_path
+
+
 def main():
-    print(f"Converting images in: {FOLDER_PATH}")
+    print("Select a folder with images...\n")
+
+    folder_path = get_folder_from_user()
+
+    if not folder_path:
+        print("No folder selected. Exiting.")
+        return
+
+    print(f"Converting images in: {folder_path}")
     print(f"Looking for: {', '.join(IMAGE_EXTENSIONS)}\n")
 
-    convert_folder_to_pdf(FOLDER_PATH, OUTPUT_PATH)
+    convert_folder_to_pdf(folder_path, output_path=None)
 
 
 if __name__ == "__main__":

@@ -20,28 +20,19 @@ SETUP (run once):
 
 RUN:
     python image_to_text.py
+
+A folder picker popup will appear—select your folder with images.
 """
 
 import os
 import re
 import pytesseract
 from PIL import Image
+from tkinter import Tk, filedialog
 
-# ---- CONFIGURATION ----
-# Edit this to point to your image directory
-INPUT_DIR = os.path.join(os.path.expanduser("~"), "Desktop", "page_scraper_downloads")
-
-LOG_PATH = os.path.join(os.path.expanduser("~"), "Desktop", "page_scraper_downloads", "progress_ocr.log")
 OCR_LANGUAGES = "eng"  # Change to "jpn+eng" for Japanese + English, "fra" for French, etc.
 
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp")
-
-
-def log(message: str):
-    print(message)
-    os.makedirs(os.path.dirname(LOG_PATH), exist_ok=True)
-    with open(LOG_PATH, "a", encoding="utf-8") as f:
-        f.write(message + "\n")
 
 
 def natural_sort_key(filename: str):
@@ -100,17 +91,49 @@ def process_folder(folder_path: str, folder_name: str):
     log(f"  combined text saved -> {combined_path}")
 
 
+def get_folder_from_user() -> str:
+    """Show a folder picker popup and return the selected path."""
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    folder_path = filedialog.askdirectory(title="Select folder with images")
+    root.destroy()
+    return folder_path
+
+
+def setup_logging(input_dir: str):
+    """Set up log file in the selected directory."""
+    log_path = os.path.join(input_dir, "progress_ocr.log")
+    return log_path
+
+
+def log(message: str):
+    print(message)
+    if hasattr(log, 'path') and log.path:
+        os.makedirs(os.path.dirname(log.path), exist_ok=True)
+        with open(log.path, "a", encoding="utf-8") as f:
+            f.write(message + "\n")
+
+
 def main():
-    if not os.path.isdir(INPUT_DIR):
-        log(f"Could not find folder: {INPUT_DIR}")
-        log("Edit INPUT_DIR at the top of this script if your images are elsewhere.")
+    print("Select a folder with images...\n")
+    input_dir = get_folder_from_user()
+
+    if not input_dir:
+        print("No folder selected. Exiting.")
         return
 
+    if not os.path.isdir(input_dir):
+        print(f"Could not find folder: {input_dir}")
+        return
+
+    log.path = os.path.join(input_dir, "progress_ocr.log")
+
     log(f"=== Starting OCR run ===")
-    log(f"Reading images from: {INPUT_DIR}")
+    log(f"Reading images from: {input_dir}")
     log(f"OCR Language: {OCR_LANGUAGES}")
 
-    for root, dirs, files in os.walk(INPUT_DIR):
+    for root, dirs, files in os.walk(input_dir):
         has_images = any(f.lower().endswith(IMAGE_EXTENSIONS) for f in files)
         if has_images:
             folder_name = os.path.basename(root)

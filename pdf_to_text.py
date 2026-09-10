@@ -20,6 +20,8 @@ SETUP (run once):
 
 RUN:
     python pdf_to_text.py
+
+A folder picker popup will appear—select your folder with PDFs.
 """
 
 import os
@@ -27,20 +29,17 @@ import re
 import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
+from tkinter import Tk, filedialog
 
-# ---- CONFIGURATION ----
-# Edit this to point to your PDF directory
-INPUT_DIR = os.path.join(os.path.expanduser("~"), "Desktop", "page_scraper_downloads")
-
-LOG_PATH = os.path.join(INPUT_DIR, "progress_pdf_ocr.log")
 OCR_LANGUAGES = "eng"  # Change to "jpn+eng" for Japanese + English, "fra" for French, etc.
 
 
 def log(message: str):
     print(message)
-    os.makedirs(INPUT_DIR, exist_ok=True)
-    with open(LOG_PATH, "a", encoding="utf-8") as f:
-        f.write(message + "\n")
+    if hasattr(log, 'path') and log.path:
+        os.makedirs(os.path.dirname(log.path), exist_ok=True)
+        with open(log.path, "a", encoding="utf-8") as f:
+            f.write(message + "\n")
 
 
 def natural_sort_key(filename: str):
@@ -104,16 +103,35 @@ def process_folder(folder_path: str, folder_name: str):
     log(f"  combined text saved -> {combined_path}")
 
 
+def get_folder_from_user() -> str:
+    """Show a folder picker popup and return the selected path."""
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    folder_path = filedialog.askdirectory(title="Select folder with PDFs")
+    root.destroy()
+    return folder_path
+
+
 def main():
-    if not os.path.isdir(INPUT_DIR):
-        log(f"Could not find folder: {INPUT_DIR}")
+    print("Select a folder with PDFs...\n")
+    input_dir = get_folder_from_user()
+
+    if not input_dir:
+        print("No folder selected. Exiting.")
         return
 
+    if not os.path.isdir(input_dir):
+        print(f"Could not find folder: {input_dir}")
+        return
+
+    log.path = os.path.join(input_dir, "progress_pdf_ocr.log")
+
     log("=== Starting PDF OCR run ===")
-    log(f"Reading PDFs from: {INPUT_DIR}")
+    log(f"Reading PDFs from: {input_dir}")
     log(f"OCR Language: {OCR_LANGUAGES}")
 
-    for root, dirs, files in os.walk(INPUT_DIR):
+    for root, dirs, files in os.walk(input_dir):
         has_pdfs = any(f.lower().endswith(".pdf") for f in files)
         if has_pdfs:
             folder_name = os.path.basename(root)
