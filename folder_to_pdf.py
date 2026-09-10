@@ -20,7 +20,7 @@ Each subfolder with images gets its own PDF.
 import os
 import re
 from PIL import Image
-from tkinter import Tk, filedialog
+from tkinter import Tk, filedialog, simpledialog, messagebox
 
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
@@ -119,6 +119,25 @@ def process_folders(root_path: str):
     return total_pdfs
 
 
+def ask_mode() -> str:
+    """Ask user what mode they want: per-folder PDFs or one combined PDF."""
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+
+    # Create a simple dialog with two buttons
+    response = messagebox.showinfo(
+        "PDF Mode",
+        "How do you want to create PDFs?\n\n"
+        "Click OK for: One PDF per folder\n"
+        "Click CANCEL for: One PDF combining all images",
+        icon=messagebox.QUESTION
+    )
+
+    root.destroy()
+    return "per_folder" if response == messagebox.OK else "combined"
+
+
 def get_folder_from_user() -> str:
     """Show a folder picker popup and return the selected path."""
     root = Tk()
@@ -129,7 +148,37 @@ def get_folder_from_user() -> str:
     return folder_path
 
 
+def process_combined_pdf(folder_path: str):
+    """Create one PDF combining all images from all folders."""
+    print(f"Collecting all images from: {folder_path}\n")
+
+    all_images = []
+    for root, dirs, files in os.walk(folder_path):
+        images = get_images_in_folder(root)
+        all_images.extend(images)
+
+    if not all_images:
+        print("No images found.")
+        return
+
+    folder_name = os.path.basename(folder_path.rstrip("/"))
+    pdf_name = f"{folder_name}_combined.pdf"
+    pdf_path = os.path.join(folder_path, pdf_name)
+
+    print(f"Combining {len(all_images)} images into one PDF...")
+    if create_pdf_from_images(all_images, pdf_path):
+        print(f"\n✓ Created: {pdf_name}")
+        print(f"  Location: {pdf_path}")
+    else:
+        print("Failed to create PDF")
+
+
 def main():
+    print("Choose PDF mode...\n")
+
+    # Ask user what mode they want
+    mode = ask_mode()
+
     print("Select a folder with images...\n")
 
     folder_path = get_folder_from_user()
@@ -138,12 +187,17 @@ def main():
         print("No folder selected. Exiting.")
         return
 
-    print(f"Processing: {folder_path}")
+    print(f"\nProcessing: {folder_path}")
     print(f"Looking for: {', '.join(IMAGE_EXTENSIONS)}\n")
 
-    total = process_folders(folder_path)
-
-    print(f"\n✓ Complete! Created/Found {total} PDF(s)")
+    if mode == "per_folder":
+        print("Mode: One PDF per folder\n")
+        total = process_folders(folder_path)
+        print(f"\n✓ Complete! Created/Found {total} PDF(s)")
+    else:
+        print("Mode: One combined PDF\n")
+        process_combined_pdf(folder_path)
+        print("✓ Complete!")
 
 
 if __name__ == "__main__":
