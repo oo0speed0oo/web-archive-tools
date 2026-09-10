@@ -80,21 +80,21 @@ def ocr_pdf(pdf_path: str) -> str:
     """Converts PDF pages into images and runs Tesseract OCR."""
     try:
         # Stage 1: Load/Convert PDF
-        print("\n  [Stage 1/2] Loading PDF...", end="", flush=True)
+        log("    [Stage 1/2] Loading PDF...")
         pages = convert_from_path(pdf_path)
-        print(f" ✓ ({len(pages)} pages)", flush=True)
+        log(f"    [Stage 1/2] Loading PDF... ✓ ({len(pages)} pages)")
 
         extracted_pages = []
 
         # Stage 2: Run OCR on each page
-        print("  [Stage 2/2] Running OCR...", end="", flush=True)
+        log("    [Stage 2/2] Running OCR...")
         for i, page_img in enumerate(pages, start=1):
             percent = (i / len(pages)) * 100
-            print(f"\r  [Stage 2/2] Running OCR... {percent:.0f}% ({i}/{len(pages)})", end="", flush=True)
+            log(f"      OCR progress: {percent:.0f}% ({i}/{len(pages)} pages)")
             text = pytesseract.image_to_string(page_img, lang=OCR_LANGUAGES)
             extracted_pages.append(f"--- PAGE {i} ---\n{text.strip()}")
 
-        print(" ✓", flush=True)
+        log("    [Stage 2/2] Running OCR... ✓")
         return "\n\n".join(extracted_pages)
     except Exception as e:
         log(f"    FAILED to OCR PDF {os.path.basename(pdf_path)}: {e}")
