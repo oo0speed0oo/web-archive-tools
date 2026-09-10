@@ -33,18 +33,21 @@ def natural_sort_key(filename: str):
 
 
 def get_images_from_folder(folder_path: str) -> list:
-    """Get all image files from a folder, sorted numerically."""
+    """Get all image files from folder and subfolders, sorted numerically."""
     if not os.path.isdir(folder_path):
         print(f"Error: Folder not found: {folder_path}")
         return []
 
-    images = [
-        f for f in os.listdir(folder_path)
-        if f.lower().endswith(IMAGE_EXTENSIONS)
-    ]
+    images = []
+    # Walk through all subfolders
+    for root, dirs, files in os.walk(folder_path):
+        for f in files:
+            if f.lower().endswith(IMAGE_EXTENSIONS):
+                full_path = os.path.join(root, f)
+                images.append(full_path)
 
     if not images:
-        print(f"No images found in {folder_path}")
+        print(f"No images found in {folder_path} or subfolders")
         return []
 
     images.sort(key=natural_sort_key)
@@ -60,17 +63,16 @@ def convert_folder_to_pdf(folder_path: str, output_path: str = None):
 
     # Load and prepare images
     image_objects = []
-    for img_file in images:
-        img_path = os.path.join(folder_path, img_file)
+    for img_path in images:
         try:
             img = Image.open(img_path)
             # Convert to RGB (PDF standard)
             if img.mode != "RGB":
                 img = img.convert("RGB")
             image_objects.append(img)
-            print(f"  ✓ Loaded: {img_file}")
+            print(f"  ✓ Loaded: {os.path.basename(img_path)}")
         except Exception as e:
-            print(f"  ✗ Failed to load {img_file}: {e}")
+            print(f"  ✗ Failed to load {os.path.basename(img_path)}: {e}")
             continue
 
     if not image_objects:
