@@ -8,6 +8,8 @@ Web Page Scraper & PDF Generator
 
 Saved output:
     ~/Desktop/page_scraper_downloads/PDFs/<Article Title>.pdf
+
+A popup will ask for the starting URL.
 """
 
 import os
@@ -18,9 +20,7 @@ import gdown
 from PIL import Image
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-
-# ---- CONFIGURATION ----
-START_URL = "https://example.com/articles/"
+from tkinter import Tk, simpledialog
 
 DESKTOP_DIR = os.path.join(os.path.expanduser("~"), "Desktop")
 BASE_DIR = os.path.join(DESKTOP_DIR, "page_scraper_downloads")
@@ -188,13 +188,34 @@ def process_article(article_url: str):
     convert_images_to_pdf(local_image_paths, target_pdf_path)
 
 
+def get_url_from_user() -> str:
+    """Show a popup asking for the starting URL."""
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    url = simpledialog.askstring(
+        "PDF Scraper",
+        "Enter the starting URL:\n\n(e.g., https://example.com/articles/)"
+    )
+    root.destroy()
+    return url
+
+
 def main():
     os.makedirs(PDF_OUTPUT_DIR, exist_ok=True)
     os.makedirs(TEMP_IMG_DIR, exist_ok=True)
+
+    print("Enter the starting URL...\n")
+    start_url = get_url_from_user()
+
+    if not start_url:
+        print("No URL provided. Exiting.")
+        return
+
     log(f"=== Starting Run: {time.strftime('%Y-%m-%d %H:%M:%S')} ===")
 
     all_article_urls = []
-    current_url = START_URL
+    current_url = start_url
 
     while current_url:
         log(f"\nFetching listing page: {current_url}")

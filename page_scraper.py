@@ -19,6 +19,8 @@ SETUP (run once):
 
 RUN:
     python page_scraper.py
+
+A popup will ask for the starting URL.
 """
 
 import os
@@ -27,10 +29,7 @@ import time
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-
-# ---- CONFIGURATION ----
-# Edit this to point to your target listing page
-START_URL = "https://example.com/articles/"
+from tkinter import Tk, simpledialog
 
 DESKTOP_DIR = os.path.join(os.path.expanduser("~"), "Desktop")
 OUTPUT_DIR = os.path.join(DESKTOP_DIR, "page_scraper_downloads")
@@ -146,13 +145,35 @@ def process_article(article_url: str):
         time.sleep(DELAY_BETWEEN_DOWNLOADS)
 
 
+def get_url_from_user() -> str:
+    """Show a popup asking for the starting URL."""
+    root = Tk()
+    root.withdraw()
+    root.attributes('-topmost', True)
+    url = simpledialog.askstring(
+        "Web Scraper",
+        "Enter the starting URL:\n\n(e.g., https://example.com/articles/)"
+    )
+    root.destroy()
+    return url
+
+
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+    print("Enter the starting URL...\n")
+    start_url = get_url_from_user()
+
+    if not start_url:
+        print("No URL provided. Exiting.")
+        return
+
     log(f"=== Starting run: {time.strftime('%Y-%m-%d %H:%M:%S')} ===")
     log(f"Saving to: {OUTPUT_DIR}")
+    log(f"Starting URL: {start_url}")
 
     all_article_urls = []
-    current_url = START_URL
+    current_url = start_url
     page_num = 1
 
     while current_url:
