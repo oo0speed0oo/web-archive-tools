@@ -6,6 +6,7 @@ A flexible Python toolkit for scraping web content and extracting text via OCR. 
 
 - **Page Scraper** — Scrapes listing pages, follows pagination, downloads embedded images
 - **PDF Scraper** — Extracts PDFs from articles or compiles images into PDFs
+- **Folder to PDF** — Quickly convert all images in a folder into a single PDF
 - **Image OCR** — Converts images to text with customizable language support
 - **PDF OCR** — Extracts text from PDF files page-by-page
 - **Resume Support** — Already-processed files are skipped, so you can pause and resume
@@ -57,7 +58,19 @@ python pdf_scraper.py
 Looks for embedded PDFs first, then falls back to compiling page images into PDFs.
 Output: `~/Desktop/page_scraper_downloads/PDFs/`
 
-### 3. Image to Text — OCR for Images
+### 3. Folder to PDF — Convert Images in a Folder to PDF
+
+Quick tool to convert all images in a folder into a single PDF:
+
+```bash
+python folder_to_pdf.py
+```
+
+Edit `FOLDER_PATH` in the script to point to your folder of images. Images are sorted numerically and combined into one PDF saved in the parent directory.
+
+Example: `~/Desktop/my_photos/` → `~/Desktop/my_photos.pdf`
+
+### 4. Image to Text — OCR for Images
 
 Edit `INPUT_DIR` and `OCR_LANGUAGES` in `image_to_text.py`, then run:
 
@@ -67,7 +80,7 @@ python image_to_text.py
 
 Creates `.txt` files for each image + a combined `_FULL_TEXT.txt` file.
 
-### 4. PDF to Text — OCR for PDFs
+### 5. PDF to Text — OCR for PDFs
 
 Edit `INPUT_DIR` and `OCR_LANGUAGES` in `pdf_to_text.py`, then run:
 
