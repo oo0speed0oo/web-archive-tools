@@ -131,6 +131,7 @@ def ask_language() -> str:
     root.geometry("300x350")
     root.attributes('-topmost', True)
     root.resizable(False, False)
+    root.configure(bg="#ffffff")
 
     selected = [None]
 
@@ -138,8 +139,9 @@ def ask_language() -> str:
         root,
         text="Select OCR Language:",
         font=("Arial", 14, "bold"),
-        fg="#000000"
-    ).pack(pady=10)
+        fg="#000000",
+        bg="#ffffff"
+    ).pack(pady=10, padx=10)
 
     # Listbox with languages
     listbox = Listbox(

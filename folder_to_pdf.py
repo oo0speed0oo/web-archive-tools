@@ -128,6 +128,7 @@ def ask_mode() -> str:
     root.geometry("400x150")
     root.attributes('-topmost', True)
     root.resizable(False, False)
+    root.configure(bg="#ffffff")
 
     mode = [None]  # Use list to store result
 
@@ -136,8 +137,10 @@ def ask_mode() -> str:
         root,
         text="How do you want to create PDFs?",
         font=("Arial", 14, "bold"),
-        fg="#000000"
-    ).pack(pady=15)
+        fg="#000000",
+        bg="#ffffff",
+        wraplength=350
+    ).pack(pady=15, padx=20)
 
     # Buttons
     button_frame = root
