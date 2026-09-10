@@ -132,7 +132,12 @@ def ask_mode() -> str:
     mode = [None]  # Use list to store result
 
     # Title
-    Label(root, text="How do you want to create PDFs?", font=("Arial", 14, "bold")).pack(pady=15)
+    Label(
+        root,
+        text="How do you want to create PDFs?",
+        font=("Arial", 14, "bold"),
+        fg="#000000"
+    ).pack(pady=15)
 
     # Buttons
     button_frame = root
@@ -152,6 +157,8 @@ def ask_mode() -> str:
         width=20,
         bg="#4CAF50",
         fg="white",
+        activebackground="#45a049",
+        activeforeground="white",
         command=choose_per_folder
     ).pack(pady=10)
 
@@ -162,6 +169,8 @@ def ask_mode() -> str:
         width=20,
         bg="#2196F3",
         fg="white",
+        activebackground="#0b7dda",
+        activeforeground="white",
         command=choose_combined
     ).pack(pady=10)
 

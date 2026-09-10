@@ -130,10 +130,22 @@ def ask_language() -> str:
 
     selected = [None]
 
-    Label(root, text="Select OCR Language:", font=("Arial", 14, "bold")).pack(pady=10)
+    Label(
+        root,
+        text="Select OCR Language:",
+        font=("Arial", 14, "bold"),
+        fg="#000000"
+    ).pack(pady=10)
 
     # Listbox with languages
-    listbox = Listbox(root, font=("Arial", 11), height=10, width=35)
+    listbox = Listbox(
+        root,
+        font=("Arial", 11),
+        height=10,
+        width=35,
+        fg="#000000",
+        bg="#ffffff"
+    )
     listbox.pack(pady=10, padx=10)
 
     for lang_name in LANGUAGE_OPTIONS.keys():
@@ -153,6 +165,8 @@ def ask_language() -> str:
         font=("Arial", 12),
         bg="#4CAF50",
         fg="white",
+        activebackground="#45a049",
+        activeforeground="white",
         command=select_language
     ).pack(pady=10)
 

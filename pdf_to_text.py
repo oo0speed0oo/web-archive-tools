@@ -142,10 +142,22 @@ def ask_language() -> str:
 
     selected = [None]
 
-    Label(root, text="Select OCR Language:", font=("Arial", 14, "bold")).pack(pady=10)
+    Label(
+        root,
+        text="Select OCR Language:",
+        font=("Arial", 14, "bold"),
+        fg="#000000"
+    ).pack(pady=10)
 
     # Listbox with languages
-    listbox = Listbox(root, font=("Arial", 11), height=10, width=35)
+    listbox = Listbox(
+        root,
+        font=("Arial", 11),
+        height=10,
+        width=35,
+        fg="#000000",
+        bg="#ffffff"
+    )
     listbox.pack(pady=10, padx=10)
 
     for lang_name in LANGUAGE_OPTIONS.keys():
@@ -165,6 +177,8 @@ def ask_language() -> str:
         font=("Arial", 12),
         bg="#4CAF50",
         fg="white",
+        activebackground="#45a049",
+        activeforeground="white",
         command=select_language
     ).pack(pady=10)
 
@@ -183,7 +197,12 @@ def ask_mode() -> str:
 
     mode = [None]
 
-    Label(root, text="How do you want to process PDFs?", font=("Arial", 14, "bold")).pack(pady=15)
+    Label(
+        root,
+        text="How do you want to process PDFs?",
+        font=("Arial", 14, "bold"),
+        fg="#000000"
+    ).pack(pady=15)
 
     def choose_folder():
         mode[0] = "folder"
@@ -200,6 +219,8 @@ def ask_mode() -> str:
         width=20,
         bg="#4CAF50",
         fg="white",
+        activebackground="#45a049",
+        activeforeground="white",
         command=choose_folder
     ).pack(pady=10)
 
@@ -210,6 +231,8 @@ def ask_mode() -> str:
         width=20,
         bg="#2196F3",
         fg="white",
+        activebackground="#0b7dda",
+        activeforeground="white",
         command=choose_single
     ).pack(pady=10)
 
