@@ -2,10 +2,10 @@
 """
 Folder to PDF Converter
 -----------------------
-Converts all images in a folder into a single PDF file.
+Converts images in each folder into separate PDF files.
 
-Scans a folder for images (.png, .jpg, .jpeg, .webp, .gif),
-sorts them numerically, and combines them into one PDF.
+Walks through a folder structure, and for each subfolder containing images,
+creates a single PDF. Each PDF is saved in its respective subfolder.
 
 SETUP (run once):
     pip install pillow
@@ -13,9 +13,8 @@ SETUP (run once):
 USAGE:
     python folder_to_pdf.py
 
-A folder picker popup will appear—select your folder with images.
-PDF is saved in the parent directory with the folder name.
-e.g., ~/Desktop/my_photos/ -> ~/Desktop/my_photos.pdf
+A folder picker popup will appear—select your root folder.
+Each subfolder with images gets its own PDF.
 """
 
 import os
@@ -32,34 +31,29 @@ def natural_sort_key(filename: str):
     return [int(p) if p.isdigit() else p for p in parts]
 
 
-def get_images_from_folder(folder_path: str) -> list:
-    """Get all image files from folder and subfolders, sorted numerically."""
+def get_images_in_folder(folder_path: str) -> list:
+    """Get image files in a specific folder (not subfolders), sorted numerically."""
     if not os.path.isdir(folder_path):
-        print(f"Error: Folder not found: {folder_path}")
         return []
 
     images = []
-    # Walk through all subfolders
-    for root, dirs, files in os.walk(folder_path):
-        for f in files:
-            if f.lower().endswith(IMAGE_EXTENSIONS):
-                full_path = os.path.join(root, f)
+    for f in os.listdir(folder_path):
+        if f.lower().endswith(IMAGE_EXTENSIONS):
+            full_path = os.path.join(folder_path, f)
+            if os.path.isfile(full_path):
                 images.append(full_path)
 
     if not images:
-        print(f"No images found in {folder_path} or subfolders")
         return []
 
     images.sort(key=natural_sort_key)
     return images
 
 
-def convert_folder_to_pdf(folder_path: str, output_path: str = None):
-    """Convert all images in a folder to a single PDF."""
-    images = get_images_from_folder(folder_path)
-
+def create_pdf_from_images(images: list, output_path: str) -> bool:
+    """Convert a list of images to a single PDF."""
     if not images:
-        return
+        return False
 
     # Load and prepare images
     image_objects = []
@@ -70,20 +64,12 @@ def convert_folder_to_pdf(folder_path: str, output_path: str = None):
             if img.mode != "RGB":
                 img = img.convert("RGB")
             image_objects.append(img)
-            print(f"  ✓ Loaded: {os.path.basename(img_path)}")
         except Exception as e:
-            print(f"  ✗ Failed to load {os.path.basename(img_path)}: {e}")
+            print(f"    ✗ Failed to load {os.path.basename(img_path)}: {e}")
             continue
 
     if not image_objects:
-        print("No valid images to convert.")
-        return
-
-    # Determine output path
-    if output_path is None:
-        folder_name = os.path.basename(folder_path.rstrip("/"))
-        parent_dir = os.path.dirname(folder_path.rstrip("/"))
-        output_path = os.path.join(parent_dir, f"{folder_name}.pdf")
+        return False
 
     # Create PDF
     try:
@@ -97,22 +83,49 @@ def convert_folder_to_pdf(folder_path: str, output_path: str = None):
             duration=100,
             loop=0,
         )
-        print(f"\n✓ PDF created successfully!")
-        print(f"  Location: {output_path}")
-        print(f"  Images combined: {len(image_objects)}")
+        return True
     except Exception as e:
-        print(f"Error creating PDF: {e}")
+        print(f"    ✗ Error creating PDF: {e}")
+        return False
+
+
+def process_folders(root_path: str):
+    """Walk through folders and create PDFs for each folder with images."""
+    total_pdfs = 0
+
+    for root, dirs, files in os.walk(root_path):
+        # Check if this folder has images
+        images = get_images_in_folder(root)
+
+        if images:
+            folder_name = os.path.basename(root)
+            pdf_name = f"{folder_name}.pdf"
+            pdf_path = os.path.join(root, pdf_name)
+
+            # Skip if PDF already exists
+            if os.path.exists(pdf_path):
+                print(f"  ✓ Already exists: {folder_name}/{pdf_name}")
+                total_pdfs += 1
+                continue
+
+            print(f"  Processing: {folder_name}/ ({len(images)} images)")
+
+            if create_pdf_from_images(images, pdf_path):
+                print(f"    ✓ Created: {pdf_name}")
+                total_pdfs += 1
+            else:
+                print(f"    ✗ Failed to create PDF")
+
+    return total_pdfs
 
 
 def get_folder_from_user() -> str:
     """Show a folder picker popup and return the selected path."""
     root = Tk()
-    root.withdraw()  # Hide the root window
-    root.attributes('-topmost', True)  # Bring picker to front
-
-    folder_path = filedialog.askdirectory(title="Select folder with images")
+    root.withdraw()
+    root.attributes('-topmost', True)
+    folder_path = filedialog.askdirectory(title="Select root folder with images")
     root.destroy()
-
     return folder_path
 
 
@@ -125,10 +138,12 @@ def main():
         print("No folder selected. Exiting.")
         return
 
-    print(f"Converting images in: {folder_path}")
+    print(f"Processing: {folder_path}")
     print(f"Looking for: {', '.join(IMAGE_EXTENSIONS)}\n")
 
-    convert_folder_to_pdf(folder_path, output_path=None)
+    total = process_folders(folder_path)
+
+    print(f"\n✓ Complete! Created/Found {total} PDF(s)")
 
 
 if __name__ == "__main__":
