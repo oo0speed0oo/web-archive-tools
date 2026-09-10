@@ -46,6 +46,24 @@ OCR_LANGUAGES = "eng"  # Default, will be set by user
 IMAGE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp")
 
 
+def print_progress(current: int, total: int, filename: str = ""):
+    """Print a nice progress bar."""
+    if total == 0:
+        return
+
+    percent = (current / total) * 100
+    bar_length = 40
+    filled = int((current / total) * bar_length)
+    bar = "█" * filled + "░" * (bar_length - filled)
+
+    status = f"{current}/{total}"
+    file_info = f" - {filename}" if filename else ""
+    print(f"\r[{bar}] {percent:.0f}% ({status}){file_info}", end="", flush=True)
+
+    if current == total:
+        print()  # New line when complete
+
+
 def natural_sort_key(filename: str):
     """Sort filenames numerically (so _02 sorts before _10, not after)."""
     parts = re.split(r"(\d+)", filename)
@@ -77,18 +95,18 @@ def process_folder(folder_path: str, folder_name: str):
 
     combined_text_parts = []
 
-    for image_file in image_files:
+    for idx, image_file in enumerate(image_files, 1):
+        print_progress(idx, len(image_files), image_file)
+
         image_path = os.path.join(folder_path, image_file)
         txt_filename = os.path.splitext(image_file)[0] + ".txt"
         txt_path = os.path.join(folder_path, txt_filename)
 
         if os.path.exists(txt_path) and os.path.getsize(txt_path) > 0:
-            log(f"  already processed {image_file}, skipping")
             with open(txt_path, "r", encoding="utf-8") as f:
                 combined_text_parts.append(f.read())
             continue
 
-        log(f"  processing {image_file} ...")
         text = ocr_image(image_path)
 
         with open(txt_path, "w", encoding="utf-8") as f:
