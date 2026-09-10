@@ -29,9 +29,20 @@ import re
 import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
-from tkinter import Tk, filedialog, Button, Label
+from tkinter import Tk, filedialog, Button, Label, Listbox, Scrollbar, SINGLE
 
-OCR_LANGUAGES = "eng"  # Change to "jpn+eng" for Japanese + English, "fra" for French, etc.
+# Language options for OCR
+LANGUAGE_OPTIONS = {
+    "English": "eng",
+    "Japanese": "jpn",
+    "Japanese + English": "jpn+eng",
+    "French": "fra",
+    "German": "deu",
+    "Spanish": "spa",
+    "Chinese (Simplified)": "chi_sim",
+}
+
+OCR_LANGUAGES = "eng"  # Default, will be set by user
 
 
 def log(message: str):
@@ -101,6 +112,47 @@ def process_folder(folder_path: str, folder_name: str):
     with open(combined_path, "w", encoding="utf-8") as f:
         f.write("\n\n===== FILE BREAK =====\n\n".join(combined_text_parts))
     log(f"  combined text saved -> {combined_path}")
+
+
+def ask_language() -> str:
+    """Ask user which language to use for OCR."""
+    root = Tk()
+    root.title("OCR Language")
+    root.geometry("300x350")
+    root.attributes('-topmost', True)
+    root.resizable(False, False)
+
+    selected = [None]
+
+    Label(root, text="Select OCR Language:", font=("Arial", 14, "bold")).pack(pady=10)
+
+    # Listbox with languages
+    listbox = Listbox(root, font=("Arial", 11), height=10, width=35)
+    listbox.pack(pady=10, padx=10)
+
+    for lang_name in LANGUAGE_OPTIONS.keys():
+        listbox.insert(len(listbox.get(0, "end")), lang_name)
+
+    # Select button
+    def select_language():
+        selection = listbox.curselection()
+        if selection:
+            lang_name = listbox.get(selection[0])
+            selected[0] = LANGUAGE_OPTIONS[lang_name]
+        root.destroy()
+
+    Button(
+        root,
+        text="Select",
+        font=("Arial", 12),
+        bg="#4CAF50",
+        fg="white",
+        command=select_language
+    ).pack(pady=10)
+
+    root.mainloop()
+
+    return selected[0] if selected[0] else "eng"
 
 
 def ask_mode() -> str:
@@ -203,6 +255,12 @@ def process_single_pdf(pdf_path: str):
 
 
 def main():
+    global OCR_LANGUAGES
+
+    print("Select OCR language...\n")
+    OCR_LANGUAGES = ask_language()
+    print(f"Selected language: {OCR_LANGUAGES}\n")
+
     print("Choose mode...\n")
     mode = ask_mode()
 
