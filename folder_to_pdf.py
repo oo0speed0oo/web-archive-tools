@@ -120,22 +120,54 @@ def process_folders(root_path: str):
 
 
 def ask_mode() -> str:
-    """Ask user what mode they want: per-folder PDFs or one combined PDF."""
+    """Ask user what mode they want with clickable buttons."""
+    from tkinter import Button, Label
+
     root = Tk()
-    root.withdraw()
+    root.title("PDF Mode")
+    root.geometry("400x150")
     root.attributes('-topmost', True)
+    root.resizable(False, False)
 
-    # Create a simple dialog with two buttons
-    response = messagebox.showinfo(
-        "PDF Mode",
-        "How do you want to create PDFs?\n\n"
-        "Click OK for: One PDF per folder\n"
-        "Click CANCEL for: One PDF combining all images",
-        icon=messagebox.QUESTION
-    )
+    mode = [None]  # Use list to store result
 
-    root.destroy()
-    return "per_folder" if response == messagebox.OK else "combined"
+    # Title
+    Label(root, text="How do you want to create PDFs?", font=("Arial", 14, "bold")).pack(pady=15)
+
+    # Buttons
+    button_frame = root
+
+    def choose_per_folder():
+        mode[0] = "per_folder"
+        root.destroy()
+
+    def choose_combined():
+        mode[0] = "combined"
+        root.destroy()
+
+    Button(
+        button_frame,
+        text="One PDF Per Folder",
+        font=("Arial", 12),
+        width=20,
+        bg="#4CAF50",
+        fg="white",
+        command=choose_per_folder
+    ).pack(pady=10)
+
+    Button(
+        button_frame,
+        text="One Combined PDF",
+        font=("Arial", 12),
+        width=20,
+        bg="#2196F3",
+        fg="white",
+        command=choose_combined
+    ).pack(pady=10)
+
+    root.mainloop()
+
+    return mode[0] if mode[0] else "per_folder"
 
 
 def get_folder_from_user() -> str:
