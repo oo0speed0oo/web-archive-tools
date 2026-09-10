@@ -79,13 +79,22 @@ def natural_sort_key(filename: str):
 def ocr_pdf(pdf_path: str) -> str:
     """Converts PDF pages into images and runs Tesseract OCR."""
     try:
+        # Stage 1: Load/Convert PDF
+        print("\n  [Stage 1/2] Loading PDF...", end="", flush=True)
         pages = convert_from_path(pdf_path)
+        print(f" ✓ ({len(pages)} pages)", flush=True)
+
         extracted_pages = []
 
+        # Stage 2: Run OCR on each page
+        print("  [Stage 2/2] Running OCR...", end="", flush=True)
         for i, page_img in enumerate(pages, start=1):
+            percent = (i / len(pages)) * 100
+            print(f"\r  [Stage 2/2] Running OCR... {percent:.0f}% ({i}/{len(pages)})", end="", flush=True)
             text = pytesseract.image_to_string(page_img, lang=OCR_LANGUAGES)
             extracted_pages.append(f"--- PAGE {i} ---\n{text.strip()}")
 
+        print(" ✓", flush=True)
         return "\n\n".join(extracted_pages)
     except Exception as e:
         log(f"    FAILED to OCR PDF {os.path.basename(pdf_path)}: {e}")
@@ -108,13 +117,15 @@ def process_folder(folder_path: str, folder_name: str):
     combined_text_parts = []
 
     for idx, pdf_file in enumerate(pdf_files, 1):
-        print_progress(idx, len(pdf_files), pdf_file)
-
         pdf_path = os.path.join(folder_path, pdf_file)
         txt_filename = os.path.splitext(pdf_file)[0] + ".txt"
         txt_path = os.path.join(folder_path, txt_filename)
 
+        # Show which file we're on
+        print(f"\n  [{idx}/{len(pdf_files)}] Processing: {pdf_file}")
+
         if os.path.exists(txt_path) and os.path.getsize(txt_path) > 0:
+            print("    ✓ Already processed, skipping")
             with open(txt_path, "r", encoding="utf-8") as f:
                 combined_text_parts.append(f.read())
             continue

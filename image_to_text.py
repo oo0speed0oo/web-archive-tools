@@ -76,7 +76,7 @@ def ocr_image(image_path: str) -> str:
         text = pytesseract.image_to_string(img, lang=OCR_LANGUAGES)
         return text.strip()
     except Exception as e:
-        log(f"    FAILED to OCR {os.path.basename(image_path)}: {e}")
+        print(f"\n    ✗ FAILED to OCR {os.path.basename(image_path)}: {e}")
         return ""
 
 
@@ -96,22 +96,26 @@ def process_folder(folder_path: str, folder_name: str):
     combined_text_parts = []
 
     for idx, image_file in enumerate(image_files, 1):
-        print_progress(idx, len(image_files), image_file)
-
         image_path = os.path.join(folder_path, image_file)
         txt_filename = os.path.splitext(image_file)[0] + ".txt"
         txt_path = os.path.join(folder_path, txt_filename)
 
+        # Show which file we're on
+        print(f"\n  [{idx}/{len(image_files)}] Processing: {image_file}")
+
         if os.path.exists(txt_path) and os.path.getsize(txt_path) > 0:
+            print("    ✓ Already processed, skipping")
             with open(txt_path, "r", encoding="utf-8") as f:
                 combined_text_parts.append(f.read())
             continue
 
+        print("    [Stage 1/1] Running OCR...", end="", flush=True)
         text = ocr_image(image_path)
 
         with open(txt_path, "w", encoding="utf-8") as f:
             f.write(text)
 
+        print(" ✓", flush=True)
         combined_text_parts.append(text)
 
     combined_path = os.path.join(folder_path, f"{folder_name}_FULL_TEXT.txt")
