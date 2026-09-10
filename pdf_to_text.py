@@ -26,6 +26,7 @@ A folder picker popup will appear—select your folder with PDFs.
 
 import os
 import re
+import time
 import pytesseract
 from PIL import Image
 from pdf2image import convert_from_path
@@ -76,28 +77,40 @@ def natural_sort_key(filename: str):
     return [int(p) if p.isdigit() else p for p in parts]
 
 
+def show_working(stage: str, duration: float = 0):
+    """Show a working indicator with elapsed time."""
+    spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    for i, char in enumerate(spinner):
+        time_str = f" ({duration:.1f}s)" if duration > 0 else ""
+        log(f"      {char} {stage}{time_str}")
+        if i < len(spinner) - 1:
+            time.sleep(0.3)
+
+
 def ocr_pdf(pdf_path: str) -> str:
     """Converts PDF pages into images and runs Tesseract OCR."""
     try:
         # Stage 1: Load/Convert PDF
-        log("    [Stage 1/2] Loading PDF...")
+        log("    [Stage 1/2] Loading PDF... (this may take a moment)")
+        start_time = time.time()
         pages = convert_from_path(pdf_path)
-        log(f"    [Stage 1/2] Loading PDF... ✓ ({len(pages)} pages)")
+        load_time = time.time() - start_time
+        log(f"    [Stage 1/2] Loading PDF... ✓ ({len(pages)} pages, {load_time:.1f}s)")
 
         extracted_pages = []
 
         # Stage 2: Run OCR on each page
-        log("    [Stage 2/2] Running OCR...")
+        log("    [Stage 2/2] Running OCR on pages...")
         for i, page_img in enumerate(pages, start=1):
             percent = (i / len(pages)) * 100
-            log(f"      OCR progress: {percent:.0f}% ({i}/{len(pages)} pages)")
+            log(f"      ⟳ Processing page {i}/{len(pages)} ({percent:.0f}%)")
             text = pytesseract.image_to_string(page_img, lang=OCR_LANGUAGES)
             extracted_pages.append(f"--- PAGE {i} ---\n{text.strip()}")
 
         log("    [Stage 2/2] Running OCR... ✓")
         return "\n\n".join(extracted_pages)
     except Exception as e:
-        log(f"    FAILED to OCR PDF {os.path.basename(pdf_path)}: {e}")
+        log(f"    ✗ FAILED to OCR PDF {os.path.basename(pdf_path)}: {e}")
         return ""
 
 
