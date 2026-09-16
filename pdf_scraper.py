@@ -55,21 +55,44 @@ def get_page_links_and_next(listing_url: str):
     soup = BeautifulSoup(resp.text, "html.parser")
 
     article_urls = []
-    for h in soup.find_all(["h2", "h3"], class_=re.compile("(title|heading)")):
+
+    # Try specific selectors for blog platforms
+    for h in soup.find_all(["h2", "h3"]):
         a = h.find("a", href=True)
-        if a:
+        if a and href_looks_valid(a["href"]):
             article_urls.append(a["href"])
 
+    # Fallback: look for links in article/post containers
     if not article_urls:
-        for a in soup.select("article a[href]"):
+        for article in soup.find_all("article"):
+            for a in article.find_all("a", href=True):
+                href = a["href"]
+                if href_looks_valid(href):
+                    article_urls.append(href)
+                    break
+
+    # Another fallback: look for links with /20 pattern
+    if not article_urls:
+        for a in soup.find_all("a", href=True):
             href = a["href"]
-            if href and href.startswith(("http", "/")):
+            if "/20" in href and href.endswith(".html") and href_looks_valid(href):
                 article_urls.append(href)
 
-    next_link = soup.find("a", class_=re.compile("(next|older|pager)"))
+    next_link = soup.find("a", class_=re.compile("(older|pager)"))
     next_url = next_link["href"] if next_link else None
 
     return list(dict.fromkeys(article_urls)), next_url
+
+
+def href_looks_valid(href: str) -> bool:
+    """Check if href looks like a valid article link."""
+    if not href:
+        return False
+    if href.startswith(("http://", "https://")):
+        return "/search" not in href
+    if href.startswith("/"):
+        return "/search" not in href
+    return False
 
 
 def extract_gdrive_ids(soup: BeautifulSoup) -> list:
