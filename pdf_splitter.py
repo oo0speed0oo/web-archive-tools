@@ -347,7 +347,6 @@ class PDFSplitterGUI:
             return
 
         output_dir = os.path.dirname(self.pdf_path)
-        pdf_name = os.path.splitext(os.path.basename(self.pdf_path))[0]
 
         try:
             with open(self.pdf_path, "rb") as f:
@@ -358,8 +357,8 @@ class PDFSplitterGUI:
                     writer = PyPDF2.PdfWriter()
                     writer.add_page(reader.pages[page_num - 1])
 
-                    # Name files: filename_Page001.pdf, filename_Page002.pdf, etc.
-                    output_name = f"{pdf_name}_Page{page_num:03d}"
+                    # Simple names: page1.pdf, page2.pdf, etc.
+                    output_name = f"page{page_num}"
                     output_path = os.path.join(output_dir, f"{output_name}.pdf")
 
                     with open(output_path, "wb") as out_f:
