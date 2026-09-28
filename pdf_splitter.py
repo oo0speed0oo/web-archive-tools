@@ -28,9 +28,10 @@ class PDFSplitterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("PDF Splitter")
-        self.root.geometry("600x500")
+        self.root.geometry("600x550")
         self.root.configure(bg="#ffffff")
         self.root.resizable(False, False)
+        self.root.attributes('-topmost', True)
 
         self.pdf_path = None
         self.total_pages = 0
@@ -73,11 +74,13 @@ class PDFSplitterGUI:
         Button(
             file_frame,
             text="Select PDF",
-            font=("Arial", 10),
+            font=("Arial", 10, "bold"),
             bg="#4CAF50",
             fg="white",
             activebackground="#45a049",
             activeforeground="white",
+            relief="raised",
+            bd=2,
             command=self.select_pdf
         ).pack(side="right", padx=5)
 
@@ -137,11 +140,13 @@ class PDFSplitterGUI:
         Button(
             input_frame,
             text="Add Split",
-            font=("Arial", 10),
+            font=("Arial", 10, "bold"),
             bg="#2196F3",
             fg="white",
             activebackground="#0b7dda",
             activeforeground="white",
+            relief="raised",
+            bd=2,
             command=self.add_split
         ).pack(side="left", padx=5)
 
@@ -175,11 +180,13 @@ class PDFSplitterGUI:
         Button(
             self.root,
             text="Remove Selected",
-            font=("Arial", 10),
+            font=("Arial", 10, "bold"),
             bg="#FF9800",
             fg="white",
             activebackground="#e68900",
             activeforeground="white",
+            relief="raised",
+            bd=2,
             command=self.remove_split
         ).pack(pady=5)
 
@@ -196,18 +203,22 @@ class PDFSplitterGUI:
             fg="white",
             activebackground="#45a049",
             activeforeground="white",
+            relief="raised",
+            bd=3,
             command=self.split_pdf
         ).pack(side="left", padx=10)
 
         Button(
             button_frame,
             text="Clear All",
-            font=("Arial", 12),
+            font=("Arial", 12, "bold"),
             width=15,
             bg="#f44336",
             fg="white",
             activebackground="#da190b",
             activeforeground="white",
+            relief="raised",
+            bd=3,
             command=self.clear_all
         ).pack(side="right", padx=10)
 
