@@ -198,7 +198,7 @@ class PDFSplitterGUI:
             button_frame,
             text="Split PDF",
             font=("Arial", 12, "bold"),
-            width=15,
+            width=12,
             bg="#4CAF50",
             fg="white",
             activebackground="#45a049",
@@ -206,13 +206,27 @@ class PDFSplitterGUI:
             relief="raised",
             bd=3,
             command=self.split_pdf
-        ).pack(side="left", padx=10)
+        ).pack(side="left", padx=5)
+
+        Button(
+            button_frame,
+            text="Split All",
+            font=("Arial", 12, "bold"),
+            width=12,
+            bg="#FF9800",
+            fg="white",
+            activebackground="#e68900",
+            activeforeground="white",
+            relief="raised",
+            bd=3,
+            command=self.split_all_pages
+        ).pack(side="left", padx=5)
 
         Button(
             button_frame,
             text="Clear All",
             font=("Arial", 12, "bold"),
-            width=15,
+            width=12,
             bg="#f44336",
             fg="white",
             activebackground="#da190b",
@@ -220,7 +234,7 @@ class PDFSplitterGUI:
             relief="raised",
             bd=3,
             command=self.clear_all
-        ).pack(side="right", padx=10)
+        ).pack(side="right", padx=5)
 
     def select_pdf(self):
         """Open file dialog to select PDF."""
@@ -322,6 +336,38 @@ class PDFSplitterGUI:
 
             messagebox.showinfo("Success", f"Split {len(self.splits)} PDF(s) successfully!")
             self.clear_all()
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to split PDF: {e}")
+
+    def split_all_pages(self):
+        """Split PDF into one file per page."""
+        if not self.pdf_path:
+            messagebox.showwarning("Warning", "Please select a PDF first")
+            return
+
+        output_dir = os.path.dirname(self.pdf_path)
+        pdf_name = os.path.splitext(os.path.basename(self.pdf_path))[0]
+
+        try:
+            with open(self.pdf_path, "rb") as f:
+                reader = PyPDF2.PdfReader(f)
+                total = len(reader.pages)
+
+                for page_num in range(1, total + 1):
+                    writer = PyPDF2.PdfWriter()
+                    writer.add_page(reader.pages[page_num - 1])
+
+                    # Name files: filename_Page001.pdf, filename_Page002.pdf, etc.
+                    output_name = f"{pdf_name}_Page{page_num:03d}"
+                    output_path = os.path.join(output_dir, f"{output_name}.pdf")
+
+                    with open(output_path, "wb") as out_f:
+                        writer.write(out_f)
+
+                    print(f"✓ Created: {output_name}.pdf")
+
+            messagebox.showinfo("Success", f"Split into {total} PDF file(s)!")
 
         except Exception as e:
             messagebox.showerror("Error", f"Failed to split PDF: {e}")
