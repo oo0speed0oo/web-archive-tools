@@ -20,7 +20,7 @@ A GUI will let you:
 
 import os
 from tkinter import Tk, filedialog, messagebox, Button, Label, Frame, Entry, Listbox, Scrollbar
-from tkinter import VERTICAL, END
+from tkinter import END
 import PyPDF2
 
 
@@ -158,7 +158,7 @@ class PDFSplitterGUI:
         list_frame.pack(pady=5, padx=20, fill="both", expand=True)
 
         scrollbar = Scrollbar(list_frame)
-        scrollbar.pack(side="right", fill=VERTICAL)
+        scrollbar.pack(side="right", fill="y")
 
         self.splits_listbox = Listbox(
             list_frame,
